@@ -1,0 +1,18 @@
+{{ define "content" }}
+    
+    <h1>Мои расходы</h1>
+
+    <a href="add">Добавить в расходы</a>
+
+    {{if .}}
+        {{range .}}
+            <p>{{.Name}} - {{.Price}} - {{.Category}}</p>
+        {{end}}
+    {{else}}
+        <p>Пусто</p>
+    {{end}}
+    
+    
+
+{{end}}
+    

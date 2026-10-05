@@ -1,0 +1,91 @@
+package main
+
+import (
+	"fmt"
+)
+
+type Expense struct{
+	Name string
+	Price int
+	Category string
+}
+
+func calculateTotal (expenses []Expense) int {
+	total := 0
+
+	for _, expense := range expenses{
+		total += expense.Price
+	}
+
+	return total
+}
+
+func showExpense(expenses []Expense){
+	fmt.Println("=== Ваши расходы ===")
+	for _, expense := range expenses{
+		fmt.Println("Название:", expense.Name)
+		fmt.Println("Цена:", expense.Price, "руб.")
+		fmt.Println("Категория:", expense.Category)
+	}
+
+	fmt.Println("___________")
+	fmt.Println("Общая сумма:", calculateTotal(expenses), "руб.")
+}
+
+func addExpense(num int, expense []Expense) []Expense{
+	var nameProduct string
+	var priceProduct int
+	var categoryProduct string
+
+	for i := 1; i <= num; i++{
+		fmt.Println("Введите Название")
+		fmt.Scan(&nameProduct)
+		fmt.Println("Введите Цену")
+		fmt.Scan(&priceProduct)
+		fmt.Println("Введите Категорию")
+		fmt.Scan(&categoryProduct)
+
+		expense = append(expense, Expense{
+			Name: nameProduct,
+			Price: priceProduct,
+			Category: categoryProduct,
+		})
+
+		fmt.Println("Товар успешно добавлен!")
+	}
+
+	return expense
+}
+
+func main(){
+	var num int
+	var choice int
+
+	expenses := []Expense{}
+	for{
+		fmt.Println("=== Учёт личных трат ===")
+		fmt.Println("1. Добавить расход")
+		fmt.Println("2. Показать расходы")
+		fmt.Println("3. Посчитать общую сумму")
+		fmt.Println("4. Выход")
+		fmt.Println("Введите число:")
+		fmt.Scan(&choice)
+
+		switch choice{
+			case 1:
+				fmt.Println("Введите кол-во расходов:")
+				fmt.Scan(&num)
+				expenses = addExpense(num, expenses)
+			case 2:
+				fmt.Println("Ваши расходы:")
+				showExpense(expenses)
+			case 3:
+				fmt.Println("Сумма расхода:", calculateTotal(expenses))
+			case 4:
+				fmt.Println("Выход из программы")
+				return
+			default:
+				fmt.Println("Неизвестная команда!")
+		}
+	}
+}
