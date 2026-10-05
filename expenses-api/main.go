@@ -2,49 +2,79 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
+	"strconv"
 )
 
-// Главная страница
-func home(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-
-	fmt.Fprintln(w, "Welcome to Expenses API!")
+type Expense struct{
+	Name string
+	Price int
+	Category string
 }
 
-// Страница About
-func about(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+var expenses []Expense
 
-	fmt.Fprintln(w, "Expenses API")
-	fmt.Fprintln(w, "Simple HTTP server written in Go.")
-	fmt.Fprintln(w, "This project will be used to learn how to build a REST API.")
-}
+func addHandler(w http.ResponseWriter, r *http.Request){
+	if r.Method == "GET"{
+		tmpl, err := template.ParseFiles("templates/layout.html", "templates/add.html")
 
-// Ping
-func ping(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		if err != nil{
+			fmt.Fprintln(w, "Ошибка загрузки шаблона") 
+			return
+		}
 
-	fmt.Fprintln(w, "pong")
-}
+		tmpl.ExecuteTemplate(w, "layout", expenses)
 
-func main() {
-	// Создаём встроенный маршрутизатор Go
-	mux := http.NewServeMux()
-
-	// Регистрируем маршруты
-	mux.HandleFunc("GET /", home)
-	mux.HandleFunc("GET /about", about)
-	mux.HandleFunc("GET /ping", ping)
-
-	// Сообщение в терминале
-	fmt.Println("Server started on http://localhost:8080")
-
-	// Запускаем HTTP-сервер
-	err := http.ListenAndServe(":8080", mux)
-
-	// Если сервер завершился с ошибкой
-	if err != nil {
-		fmt.Println("Server error:", err)
+		return
 	}
+
+	if r.Method != "POST"{
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
+		return
+	}
+
+	name := r.FormValue("name")
+	priceStr := r.FormValue("price")
+	price, err := strconv.Atoi(priceStr)
+	category := r.FormValue("category")
+
+	if err != nil{
+		fmt.Fprintln(w, "Ошибка загрузки") 
+		return
+	}
+
+	expense := Expense{
+		Name:     name,
+		Price:    price,
+		Category: category,
+	}
+	
+	expenses = append(expenses, expense)
+
+	http.Redirect(w, r, "/", 303)
+}
+
+
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("templates/layout.html", "templates/home.html")
+
+	if err != nil{
+		fmt.Fprintln(w, "Ошибка загрузки шаблона") 
+		return
+	}
+
+	tmpl.ExecuteTemplate(w, "layout", expenses)
+}
+
+func aboutHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "О нас")
+}
+
+func main(){
+	http.HandleFunc("/", homeHandler)
+	http.HandleFunc("/about", aboutHandler)
+	http.HandleFunc("/add", addHandler)
+	
+	http.ListenAndServe(":8080", nil)
 }
