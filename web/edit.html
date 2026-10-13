@@ -1,0 +1,20 @@
+{{define "content"}}
+    <h1>Редактировать расходы</h1>
+    <form action="/edit" method="POST">
+
+        <input type="hidden" name="id" value="{{.ID}}">
+
+        <label>Название:</label>
+        <input type="text" name="description" value="{{.Description}}">
+
+        <label>Цена:</label>
+        <input type="number" name="amount" value="{{.Amount}}">
+
+        <label>Дата расхода:</label>
+        <input type="date" name="date" value="{{.Date}}" required>
+
+        <button type="submit">Сохранить изменение</button>
+    </form>
+
+    <a href="/">Назад</a>
+{{end}}

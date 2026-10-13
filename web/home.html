@@ -1,0 +1,21 @@
+{{ define "content" }}
+    
+    <h1>Мои расходы</h1>
+
+    <a href="/add">Добавить в расходы</a>
+
+    {{if .}}
+        {{range .}}
+            <p>{{.Description}} - {{.Amount}} - {{.Date}}</p>
+            <a href="/edit?id={{.ID}}">Редактировать</a>
+            <form action="/delete" method="POST">
+                <input type="hidden" name="id" value="{{.ID}}">
+                <button type="submit">Удалить</button>
+            </form>
+            
+        {{end}}
+    {{else}}
+        <p>Пусто</p>
+    {{end}}
+
+{{end}}

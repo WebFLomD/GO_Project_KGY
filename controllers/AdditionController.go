@@ -1,0 +1,46 @@
+package controllers
+
+import (
+	"database/sql"
+	"expenses/config"
+	"fmt"
+	"html/template"
+	"net/http"
+	"strconv"
+)
+
+func ActionAddition (db *sql.DB, w http.ResponseWriter, r *http.Request){
+	// GET
+	if r.Method == http.MethodGet{
+		tmpl, err := template.ParseFiles("./web/layout.html", "./web/add.html")
+		
+		if err != nil{
+			fmt.Fprintln(w, "Ошибка загрузки шаблона!")
+			return
+		}
+
+		tmpl.ExecuteTemplate(w, "layout", nil)
+		return
+	}
+
+	// POST
+	if r.Method != http.MethodPost{
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
+		return
+	}
+
+	description := r.FormValue("description")
+	amount, err := strconv.Atoi(r.FormValue("amount"))
+	if err != nil{
+		fmt.Fprintln(w, "Ошибка загрузки") 
+		return
+	}
+	date := r.FormValue("date")
+
+	err = config.AddExpense(db, description, amount, date)
+	if err != nil{
+		http.Error(w, "Не удалось добавить расход", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
