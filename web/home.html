@@ -6,7 +6,7 @@
 
     {{if .}}
         {{range .}}
-            <p>{{.Description}} - {{.Amount}} - {{.Date}}</p>
+            <p>{{.Description}} - {{.Amount}} - {{.Date}} - {{.CategoryName}}</p>
             <a href="/edit?id={{.ID}}">Редактировать</a>
             <form action="/delete" method="POST">
                 <input type="hidden" name="id" value="{{.ID}}">

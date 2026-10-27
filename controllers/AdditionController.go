@@ -13,13 +13,18 @@ func ActionAddition (db *sql.DB, w http.ResponseWriter, r *http.Request){
 	// GET
 	if r.Method == http.MethodGet{
 		tmpl, err := template.ParseFiles("./web/layout.html", "./web/add.html")
-		
 		if err != nil{
 			fmt.Fprintln(w, "Ошибка загрузки шаблона!")
 			return
 		}
 
-		tmpl.ExecuteTemplate(w, "layout", nil)
+		categories, err := config.GetCategory(db)
+		if err != nil {
+			http.Error(w, "Не удалось загрузить данные!", http.StatusInternalServerError)
+			return
+		}
+
+		tmpl.ExecuteTemplate(w, "layout", categories)
 		return
 	}
 
@@ -36,8 +41,13 @@ func ActionAddition (db *sql.DB, w http.ResponseWriter, r *http.Request){
 		return
 	}
 	date := r.FormValue("date")
+	categoryID, err := strconv.Atoi(r.FormValue("category_id"))
+	if err != nil{
+		fmt.Fprintln(w, "Ошибка загрузки") 
+		return
+	}
 
-	err = config.AddExpense(db, description, amount, date)
+	err = config.AddExpense(db, description, amount, date, categoryID)
 	if err != nil{
 		http.Error(w, "Не удалось добавить расход", http.StatusInternalServerError)
 		return

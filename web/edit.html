@@ -2,16 +2,25 @@
     <h1>Редактировать расходы</h1>
     <form action="/edit" method="POST">
 
-        <input type="hidden" name="id" value="{{.ID}}">
+        <input type="hidden" name="id" value="{{.Expense.ID}}">
 
         <label>Название:</label>
-        <input type="text" name="description" value="{{.Description}}">
+        <input type="text" name="description" value="{{.Expense.Description}}">
 
         <label>Цена:</label>
-        <input type="number" name="amount" value="{{.Amount}}">
+        <input type="number" name="amount" value="{{.Expense.Amount}}">
 
         <label>Дата расхода:</label>
-        <input type="date" name="date" value="{{.Date}}" required>
+        <input type="date" name="date" value="{{.Expense.Date}}" required>
+
+        <label>Категория:</label>
+        <select name="category_id">
+            {{range .Categories}}
+                <option value="{{.ID}}" {{if eq .ID $.Expense.CategoryID}}selected{{end}}>
+                    {{.Name}}
+                </option>
+            {{end}}
+        </select>
 
         <button type="submit">Сохранить изменение</button>
     </form>

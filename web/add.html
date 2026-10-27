@@ -11,6 +11,13 @@
         <label>Дата расхода:</label>
         <input type="date" name="date" required>
 
+        <label>Категория:</label>
+        <select name="category_id">
+            {{range .}}
+                <option value="{{.ID}}">{{.Name}}</option>
+            {{end}}
+        </select>
+
         <button type="submit">Добавить</button>
     </form>
 

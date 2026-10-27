@@ -3,6 +3,7 @@ package controllers
 import (
 	"database/sql"
 	"expenses/config"
+	"expenses/models"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -24,17 +25,29 @@ func EditExpense(db *sql.DB, w http.ResponseWriter, r *http.Request){
 				return
 			}
 
+			categories, err := config.GetCategory(db)
+			if err != nil{
+				http.Error(w, "Не удалось загрузить категорию", http.StatusNotFound)
+				return
+			}
+
 			tmpl, err := template.ParseFiles("./web/layout.html", "./web/edit.html")
 			if err != nil {
 				http.Error(w, "Ошибка загрузки шаблона!", http.StatusInternalServerError)
 				return
 			}
 
-			err = tmpl.ExecuteTemplate(w, "layout", expense)
+			data := models.EditExpenseData{
+				Expense: expense,
+				Categories: categories,
+			}
+
+			err = tmpl.ExecuteTemplate(w, "layout", data)
 			if err != nil{
 				http.Error(w, "Ошибка отображения страницы", http.StatusInternalServerError)
 				return
 			}
+		
 		case http.MethodPost:
 			id, err := strconv.Atoi(r.FormValue("id"))
 			if err != nil{
@@ -48,8 +61,13 @@ func EditExpense(db *sql.DB, w http.ResponseWriter, r *http.Request){
 				return
 			}
 			date := r.FormValue("date")
+			categoryID, err := strconv.Atoi(r.FormValue("category_id"))
+			if err != nil {
+				http.Error(w, "Некорректная категория", http.StatusBadRequest)
+				return
+			}
 			
-			err = config.UpdateExpense(db, id, description, amount, date)
+			err = config.UpdateExpense(db, id, description, amount, date, categoryID)
 			if err != nil{
 				http.Error(w, "Не удалось обновить данные", http.StatusInternalServerError)
 				return

@@ -28,7 +28,7 @@ func ConnectDB() (*sql.DB, error){
 // Функция получение данные с БД
 // Пример кода: https://go.dev/doc/database/querying
 func GetExpenses (db *sql.DB) ([]models.Expense, error){
-	rows, err := db.Query("SELECT id, description, amount, date FROM expenses")
+	rows, err := db.Query("SELECT expenses.id, expenses.description, expenses.amount, expenses.date, expenses.category_id, categories.name FROM expenses JOIN categories ON expenses.category_id = categories.id")
 	if err != nil{
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func GetExpenses (db *sql.DB) ([]models.Expense, error){
 	for rows.Next(){
 		var expense models.Expense	
 		
-		if err := rows.Scan(&expense.ID, &expense.Description, &expense.Amount, &expense.Date); err != nil{
+		if err := rows.Scan(&expense.ID, &expense.Description, &expense.Amount, &expense.Date, &expense.CategoryID, &expense.CategoryName); err != nil{
 			return nil, err
 		}
 
@@ -57,8 +57,8 @@ func GetExpenses (db *sql.DB) ([]models.Expense, error){
 func GetExpenseByID(db *sql.DB, id int)(models.Expense, error){
 	var expense models.Expense
 
-	row := db.QueryRow("SELECT id, description, amount, date FROM expenses WHERE id = ?", id)
-	err := row.Scan(&expense.ID, &expense.Description, &expense.Amount, &expense.Date)
+	row := db.QueryRow("SELECT id, description, amount, date, category_id FROM expenses WHERE id = ?", id)
+	err := row.Scan(&expense.ID, &expense.Description, &expense.Amount, &expense.Date, &expense.CategoryID)
 
 	if err != nil{
 		return models.Expense{}, err
@@ -68,9 +68,9 @@ func GetExpenseByID(db *sql.DB, id int)(models.Expense, error){
 }
 
 // Функция добавление в БД
-func AddExpense(db *sql.DB, description string, amount int, date string) error{
-	_, err := db.Exec("INSERT INTO expenses (description, amount, date) VALUES (?, ?, ?)",
-							description, amount, date)
+func AddExpense(db *sql.DB, description string, amount int, date string, categoryID int) error{
+	_, err := db.Exec("INSERT INTO expenses (description, amount, date, category_id) VALUES (?, ?, ?, ?)",
+							description, amount, date, categoryID)
 
 	if err != nil{
 		return err
@@ -80,22 +80,14 @@ func AddExpense(db *sql.DB, description string, amount int, date string) error{
 }
 
 // Функция редактирование в БД
-// func UpdateExpense(db *sql.DB, id int, description string, amount int, date string) error{
-// 	_, err := db.Exec("UPDATE expenses SET description = ?, amount = ?, date = ? WHERE id = ?", description, amount, date, id)
-	
-// 	if err != nil{
-// 		return err
-// 	}
-// 	return nil
-// }
-
-func UpdateExpense(db *sql.DB, id int, description string, amount int, date string) error {
+func UpdateExpense(db *sql.DB, id int, description string, amount int, date string, categoryID int) error {
     _, err := db.Exec(
-        "UPDATE expenses SET description = ?, amount = ?, date = ? WHERE id = ?",
-        description, amount, date, id,
+        "UPDATE expenses SET description = ?, amount = ?, date = ?, category_id = ? WHERE id = ?",
+        description, amount, date, categoryID, id,
     )
     return err
 }
+
 // Функция удаление данные с БД
 func DeleteExpense (db *sql.DB, id int) error{
 	_, err := db.Exec("DELETE FROM expenses WHERE id = ?", id)
@@ -105,4 +97,30 @@ func DeleteExpense (db *sql.DB, id int) error{
 	}
 
 	return nil
+}
+
+// Функция получение данные с БД - Категория
+func GetCategory (db *sql.DB) ([]models.Category, error){
+	rows, err := db.Query("SELECT id, name from categories")
+	if err != nil{
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []models.Category
+	
+	for rows.Next(){
+		var category models.Category
+		if err := rows.Scan(&category.ID, &category.Name); err != nil{
+			return nil, err
+		}
+
+		categories = append(categories, category)
+	}
+
+	if  err = rows.Err(); err != nil{
+		return nil, err
+	}
+
+	return categories, nil
 }

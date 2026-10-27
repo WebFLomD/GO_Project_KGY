@@ -3,6 +3,7 @@ package controllers
 import (
 	"database/sql"
 	"expenses/config"
+	"fmt"
 	"html/template"
 	"net/http"
 )
@@ -22,4 +23,5 @@ func ActionHome(db *sql.DB, w http.ResponseWriter, r *http.Request){
 	}
 
 	tmpl.ExecuteTemplate(w, "layout", expenses)
+	fmt.Printf("%+v\n", expenses)
 }
