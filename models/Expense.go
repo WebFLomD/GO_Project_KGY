@@ -13,3 +13,12 @@ type EditExpenseData struct{
 	Expense     Expense
 	Categories  []Category
 }
+
+type HomeData struct {
+    Expenses   []Expense
+    Categories []Category
+
+    SelectedCategory string
+    DateFrom         string
+    DateTo           string
+}

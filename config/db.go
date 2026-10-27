@@ -3,6 +3,7 @@ package config
 import (
 	"database/sql"
 	"expenses/models"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -27,8 +28,39 @@ func ConnectDB() (*sql.DB, error){
 
 // Функция получение данные с БД
 // Пример кода: https://go.dev/doc/database/querying
-func GetExpenses (db *sql.DB) ([]models.Expense, error){
-	rows, err := db.Query("SELECT expenses.id, expenses.description, expenses.amount, expenses.date, expenses.category_id, categories.name FROM expenses JOIN categories ON expenses.category_id = categories.id")
+func GetExpenses (db *sql.DB, category string, dateFrom string, dateTo string) ([]models.Expense, error){
+	var conditions []string
+	var args []interface{}
+
+	// Фильтр по категории
+    if category != "" {
+        conditions = append(conditions, "expenses.category_id = ?")
+        args = append(args, category)
+    }
+
+    // Фильтр по начальной дате
+    if dateFrom != "" {
+        conditions = append(conditions, "expenses.date >= ?")
+        args = append(args, dateFrom)
+    }
+
+    // Фильтр по конечной дате
+    if dateTo != "" {
+        conditions = append(conditions, "expenses.date <= ?")
+        args = append(args, dateTo)
+    }
+
+	// SQL запрос
+	query := `SELECT expenses.id, expenses.description, expenses.amount,
+				expenses.date, expenses.category_id, categories.name
+        	FROM expenses
+        	JOIN categories ON expenses.category_id = categories.id`
+
+	if len(conditions) > 0 {
+    	query += " WHERE " + strings.Join(conditions, " AND ")
+    }
+
+	rows, err := db.Query(query, args...)
 	if err != nil{
 		return nil, err
 	}
